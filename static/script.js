@@ -30,9 +30,14 @@ socket.on('install_start', (data) => {
 
 socket.on('install_complete', (data) => {
     if (data.status === 'success') {
-        log(`Installation completed for: ${data.target}`, 'success');
+        log(`Operation completed for: ${data.target}`, 'success');
+        // Refresh the UI to reflect changes (green/red status)
+        if (currentCategory) {
+            // Re-fetch the tools for the current category without full reload
+            loadTools(currentCategory.id);
+        }
     } else {
-        log(`Installation failed for: ${data.target}`, 'error');
+        log(`Operation failed for: ${data.target}`, 'error');
     }
 });
 
@@ -43,14 +48,6 @@ async function loadCategories() {
     const categories = await res.json();
 
     categoryList.innerHTML = '';
-
-    // "All" item
-    /*
-    const allLi = document.createElement('li');
-    allLi.textContent = 'ALL TOOLS';
-    allLi.onclick = () => loadTools('all');
-    categoryList.appendChild(allLi);
-    */
 
     categories.forEach(cat => {
         const li = document.createElement('li');
@@ -76,37 +73,26 @@ function selectCategory(element, category) {
 async function loadTools(categoryId) {
     toolsGrid.innerHTML = '<div class="placeholder-msg">Loading tools...</div>';
 
-    // Install all button
-    const installAllBtn = document.createElement('button');
-    installAllBtn.className = 'install-all-btn';
-    installAllBtn.textContent = `INSTALL ALL ${categoryId.toUpperCase()} TOOLS`;
-    installAllBtn.onclick = () => installCategory(categoryId);
-
     // Fetch tools
     const res = await fetch(`/api/tools/${categoryId}`);
     const tools = await res.json();
 
     toolsGrid.innerHTML = '';
 
-    // Insert button first (in a full width container or just separate)
-    // For grid layout, we might want to put this above the grid or as a special card.
-    // Let's put it above the grid in the DOM, but for now just appending to main-content cleared area?
-    // Actually simplicity: Put it in the grid header area? No.
-    // Let's append to main-content by clearing toolsGrid and re-adding.
-    // We'll just put it inside the grid as a special wide card? No.
-
-    // To keep it simple, we will just have the grid contain cards.
-    // We can put the install button in the header? Nospace there.
-    // Let's create a container above the grid.
+    // Header Actions Container
     let headerContainer = document.getElementById('category-actions');
     if (!headerContainer) {
         headerContainer = document.createElement('div');
         headerContainer.id = 'category-actions';
+        headerContainer.style.width = '100%';
         headerContainer.style.marginBottom = '20px';
         toolsGrid.parentNode.insertBefore(headerContainer, toolsGrid);
     }
-    headerContainer.innerHTML = '';
-    headerContainer.appendChild(installAllBtn);
+
+    headerContainer.innerHTML = `
+        <button class="install-all-btn" onclick="installCategory('${categoryId}')">INSTALL ALL ${categoryId.toUpperCase()} TOOLS</button>
+        <button class="nuke-btn" onclick="nukeSystem()">☢️ NUKE SYSTEM (Uninstall All)</button>
+    `;
 
     tools.forEach(tool => {
         const card = document.createElement('div');
@@ -115,32 +101,71 @@ async function loadTools(categoryId) {
             card.classList.add('installed');
         }
 
+        // Define status light class
+        let statusClass = '';
+        if (tool.health === 'healthy') statusClass = 'healthy';
+        else if (tool.health === 'installed_but_error') statusClass = 'broken';
+
         let statusText = tool.installed ? 'Installed' : 'Click to install';
 
         card.innerHTML = `
-            <h3>${tool.name}</h3>
+            <h3><span class="status-light ${statusClass}"></span>${tool.name}</h3>
             <span class="type-badge">${tool.type}</span>
             <p>${statusText}</p>
         `;
+
         card.onclick = () => installTool(tool);
+
+        // Add a small uninstall button if installed
+        if (tool.installed) {
+            const uninstallBtn = document.createElement('button');
+            uninstallBtn.innerText = '🗑️';
+            uninstallBtn.title = 'Uninstall';
+            // Inline styles for the trash button since it's a small dynamic element
+            uninstallBtn.style.cssText = 'position:absolute; top:12px; right:10px; background:transparent; border:none; cursor:pointer; font-size: 1.1rem; z-index:10;';
+            uninstallBtn.onclick = (e) => {
+                e.stopPropagation(); // Prevent card click
+                uninstallTool(tool);
+            };
+            card.appendChild(uninstallBtn);
+        }
+
         toolsGrid.appendChild(card);
     });
 }
 
 async function installCategory(categoryId) {
     if (!confirm(`Install ALL ${categoryId} tools? This may take a while.`)) return;
-
+    log(`Sending request to install all in ${categoryId}...`);
     await fetch(`/api/install/category/${categoryId}`, { method: 'POST' });
 }
 
 async function installTool(tool) {
-    // if (!confirm(`Install ${tool.name}?`)) return;
-
+    log(`Sending request to install ${tool.name}...`);
     await fetch('/api/install/tool', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(tool)
     });
+}
+
+async function uninstallTool(tool) {
+    if (!confirm(`Are you sure you want to uninstall ${tool.name}?`)) return;
+
+    log(`Sending request to uninstall ${tool.name}...`);
+    await fetch('/api/uninstall/tool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tool)
+    });
+}
+
+async function nukeSystem() {
+    if (!confirm("WARNING: This will try to uninstall ALL tools managed by this dashboard. Are you sure?")) return;
+    if (!confirm("DOUBLE CHECK: Use this only for testing/cleanup. Proceed?")) return;
+
+    log(`INITIATING SYSTEM NUKE...`);
+    await fetch('/api/nuke', { method: 'POST' });
 }
 
 function log(message, type = 'info') {

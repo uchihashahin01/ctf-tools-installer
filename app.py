@@ -43,12 +43,19 @@ def get_tools(category):
     tools_raw = ctf_installer.get_category_tools(category)
     tools = []
     for item in tools_raw:
+        # Check basic installation
         is_installed = ctf_installer.is_tool_installed(item[0], item[1], item[2])
+        # Check health if installed
+        health = "missing"
+        if is_installed:
+            health = ctf_installer.check_tool_health(item[0], item[1], item[2])
+            
         tools.append({
             "name": item[0],
             "type": item[1],
             "real_name": item[2],
-            "installed": is_installed
+            "installed": is_installed,
+            "health": health
         })
     return jsonify(tools)
 
@@ -102,6 +109,42 @@ def install_tool_endpoint():
 
     socketio.start_background_task(run_install)
     return jsonify({"status": "started", "message": f"Installation started for {tool_name}"})
+
+@app.route('/api/uninstall/tool', methods=['POST'])
+def uninstall_tool_endpoint():
+    data = request.json
+    tool_name = data.get('name')
+    tool_type = data.get('type')
+    real_name = data.get('real_name')
+    
+    def run_uninstall():
+        socketio.emit('log_message', {'message': f"Uninstalling {tool_name}...", 'status': 'WARNING'})
+        try:
+            ctf_installer.uninstall_tool(tool_name, tool_type, real_name)
+            socketio.emit('log_message', {'message': f"Uninstalled {tool_name}", 'status': 'SUCCESS'})
+            # We don't really have a specific event for uninstall complete to update UI yet, 
+            # but user can refresh. Or we reuse install_complete with a specific flag.
+            socketio.emit('install_complete', {'status': 'success', 'target': tool_name}) 
+        except Exception as e:
+            socketio.emit('log_message', {'message': str(e), 'status': 'ERROR'})
+
+    socketio.start_background_task(run_uninstall)
+    return jsonify({"status": "started", "message": f"Uninstallation started for {tool_name}"})
+
+@app.route('/api/nuke', methods=['POST'])
+def nuke_endpoint():
+    def run_nuke():
+        socketio.emit('log_message', {'message': "INITIATING SYSTEM NUKE...", 'status': 'WARNING'})
+        try:
+            ctf_installer.nuke_all()
+            socketio.emit('log_message', {'message': "SYSTEM NUKE COMPLETE", 'status': 'SUCCESS'})
+            # Trigger UI refresh
+            socketio.emit('install_complete', {'status': 'success', 'target': 'System Nuke'})
+        except Exception as e:
+            socketio.emit('log_message', {'message': str(e), 'status': 'ERROR'})
+
+    socketio.start_background_task(run_nuke)
+    return jsonify({"status": "started", "message": "Nuke started"})
 
 if __name__ == '__main__':
     # Check sudo

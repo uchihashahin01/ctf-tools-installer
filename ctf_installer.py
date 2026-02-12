@@ -187,7 +187,91 @@ def is_tool_installed(name, type_, real_name):
              return os.path.exists("pwndbg")
     return False
 
-# --- Category Installers ---
+def check_tool_health(name, type_, real_name):
+    """
+    Checks if a tool is operational by running a version command.
+    Returns: 'healthy', 'installed_but_error', 'missing'
+    """
+    if not is_tool_installed(name, type_, real_name):
+        return 'missing'
+
+    # Define version commands for specific tools
+    version_commands = {
+        "radare2": "r2 -v",
+        "gdb": "gdb --version",
+        "strace": "strace -V",
+        "ltrace": "ltrace -V",
+        "wine": "wine --version",
+        "python3": "python3 --version",
+        "git": "git --version",
+        "docker": "docker --version",
+        "sage": "sage -v",
+        "pwntools": "python3 -c 'import pwn'",
+        "angr": "python3 -c 'import angr'", 
+        "nikto": "nikto -Version",
+        "gobuster": "gobuster version",
+        "sqlmap": "sqlmap --version",
+        "nmap": "nmap --version",
+        "binwalk": "binwalk --version",
+        "tshark": "tshark -v",
+    }
+
+    cmd = version_commands.get(real_name)
+    
+    # Generic fallback for simple binaries
+    if not cmd and type_ == "apt":
+        cmd = f"{real_name} --version"
+    
+    if not cmd:
+        # If we don't know how to check health, just assume healthy if installed
+        return 'healthy'
+
+    try:
+        # Run quickly, suppress output
+        subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5)
+        return 'healthy'
+    except:
+        return 'installed_but_error'
+
+def uninstall_tool(name, type_, real_name):
+    if not is_tool_installed(name, type_, real_name):
+        print_status(f"{name} is not installed.", "WARNING")
+        return
+
+    print_status(f"Uninstalling {name}...", "INFO")
+    
+    if type_ == "apt":
+        run_cmd(f"apt-get remove -y {real_name}")
+        run_cmd(f"apt-get autoremove -y")
+    elif type_ == "pip":
+        run_cmd(f"pip3 uninstall -y {real_name}")
+        if run_cmd(f"pip3 uninstall -y {real_name} --break-system-packages", ignore_errors=True):
+             pass
+    elif type_ == "custom":
+        if real_name == "install_pwndbg":
+             if os.path.exists("pwndbg"):
+                 shutil.rmtree("pwndbg")
+                 print_status("Removed pwndbg directory", "SUCCESS")
+
+def nuke_all():
+    print_status("NUKING ALL INSTALLED TOOLS...", "WARNING")
+    # Get all categories
+    categories = [
+        ("essentials", install_essentials),
+        ("crypto", install_crypto), 
+        ("reverse", install_reverse), 
+        ("pwn", install_pwn), 
+        ("forensics", install_forensics), 
+        ("web", install_web), 
+        ("misc", install_misc)
+    ]
+    
+    for cat_name, _ in categories:
+        tools = get_category_tools(cat_name)
+        for _, type_, real_name in tools:
+            uninstall_tool(_, type_, real_name)
+            
+    print_status("System Nuke Complete. I hope you know what you did.", "SUCCESS")
 
 def install_essentials():
     print_status("Starting Essentials Installation...", "HEADER")

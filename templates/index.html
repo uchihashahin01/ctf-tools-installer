@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTF Tools Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">CTF_TOOLS</div>
+            <ul id="category-list">
+                <!-- Populated by JS -->
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header>
+                <h1 id="page-title">Dashboard</h1>
+                <div class="status-indicator" id="connection-status">Disconnected</div>
+            </header>
+
+            <div id="tools-grid" class="grid">
+                <!-- Cards populated by JS -->
+                <div class="placeholder-msg">Select a category to view tools.</div>
+            </div>
+
+            <!-- Terminal Area -->
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <span>>_ INSTALLATION LOGS</span>
+                    <button id="clear-log">CLEAR</button>
+                </div>
+                <div class="terminal-output" id="terminal-output">
+                    <div class="log-line info">[*] System Ready. Waiting for commands...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

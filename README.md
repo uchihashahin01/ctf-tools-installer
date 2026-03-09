@@ -1,11 +1,11 @@
-# 🚩 CTF Tools Installer
+# ⚔ CTForge
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-purple)
 ![Release](https://img.shields.io/github/v/release/uchihashahin01/ctf-tools-installer?label=Latest&color=green)
 ![Downloads](https://img.shields.io/github/downloads/uchihashahin01/ctf-tools-installer/total?color=blue)
 
-A comprehensive, automated **CTF tools installer** for Linux with **three interfaces**: a modern **Terminal UI (TUI)**, a **Web Dashboard**, and a traditional **CLI**. Ships as a single downloadable binary with built-in **auto-update**.
+**Forge your CTF arsenal.** A comprehensive, automated CTF tools installer for Linux with a **Desktop App**, **Web Dashboard**, and **CLI**. Ships as a single binary, `.deb` package, or `.AppImage` with built-in **auto-update**.
 
 Designed for **Ubuntu / Debian** based systems (including WSL).
 
@@ -15,64 +15,81 @@ Designed for **Ubuntu / Debian** based systems (including WSL).
 
 | Feature | Description |
 |---------|-------------|
-| **Terminal UI (TUI)** | Beautiful interactive app built with [Textual](https://textual.textualize.io/) — keyboard & mouse driven, uses minimal RAM |
-| **Web Dashboard** | Cyberpunk-themed browser UI with real-time WebSocket logs |
+| **Desktop App** | Native Linux GUI powered by [pywebview](https://pywebview.flowrl.com/) (WebKit2GTK) — lightweight, ~10 MB RAM |
+| **Web Dashboard** | Cyberpunk-themed browser UI with real-time WebSocket logs & integrated manual |
 | **CLI** | Non-interactive scripting mode with Rich-formatted output |
-| **Manual Guide** | Full copy-paste command reference ([MANUAL.md](MANUAL.md)) |
+| **Manual Guide** | Integrated in the dashboard + available as [MANUAL.md](MANUAL.md) |
 | **Auto-Update** | Checks GitHub Releases for new versions; one-command self-update |
-| **Single Binary** | Download from Releases — no Python/pip setup needed |
+| **Multiple Formats** | Binary, `.deb`, and `.AppImage` — no Python/pip setup needed |
 | **Smart Detection** | Skips already-installed tools, reports health status |
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1 — Download the binary (recommended)
+### Option 1 — `.deb` package (recommended for Ubuntu/Debian)
 
 ```bash
-# Download latest release
-curl -sL https://github.com/uchihashahin01/ctf-tools-installer/releases/latest/download/ctf-tools -o ctf-tools
-chmod +x ctf-tools
+# Download the .deb from the latest release
+sudo dpkg -i ctforge_*.deb
 
-# Launch TUI (default)
-sudo ./ctf-tools
-
-# Or launch web dashboard
-sudo ./ctf-tools web
-
-# Or use CLI
-sudo ./ctf-tools cli --all
+# Launch the desktop app
+ctforge
 ```
 
-### Option 2 — Run from source
+### Option 2 — AppImage
+
+```bash
+chmod +x CTForge-*.AppImage
+./CTForge-*.AppImage
+```
+
+### Option 3 — Standalone binary
+
+```bash
+curl -sL https://github.com/uchihashahin01/ctf-tools-installer/releases/latest/download/ctforge -o ctforge
+chmod +x ctforge
+
+# Desktop app (default)
+./ctforge
+
+# Web dashboard
+./ctforge web
+
+# CLI
+./ctforge cli --all
+```
+
+### Option 4 — Run from source
 
 ```bash
 git clone https://github.com/uchihashahin01/ctf-tools-installer.git
 cd ctf-tools-installer
-
 pip3 install -r requirements.txt
 
-# Launch TUI
-sudo python3 main.py
+# Desktop app
+python3 main.py
 
-# Launch web dashboard
-sudo python3 main.py web
+# Web dashboard
+python3 main.py web
 
-# CLI mode
-sudo python3 main.py cli --all
+# CLI
+python3 main.py cli --all
 ```
+
+> **Note:** The desktop app requires `libwebkit2gtk-4.1-0` on your system. The `.deb` package installs this dependency automatically.
 
 ---
 
 ## 🖥️ Usage
 
 ```
-sudo ./ctf-tools [mode] [options]
+ctforge [mode] [options]
 ```
 
 | Mode | Description |
 |------|-------------|
-| *(none)* / `tui` | Launch the Terminal UI app |
+| *(none)* / `app` | Launch the desktop app |
 | `web` | Start web dashboard (default port 5000) |
 | `cli` | Rich CLI — interactive menu or flags |
 | `update` | Check for updates & self-update |
@@ -82,20 +99,20 @@ sudo ./ctf-tools [mode] [options]
 ### CLI Flags
 
 ```bash
-sudo ./ctf-tools cli --all          # Install everything
-sudo ./ctf-tools cli --pwn --web    # Install specific categories
-sudo ./ctf-tools cli --status       # Show installed/health status
-sudo ./ctf-tools cli --nuke         # Uninstall all managed tools
-sudo ./ctf-tools cli --manual       # Display manual guide
+ctforge cli --all          # Install everything
+ctforge cli --pwn --web    # Install specific categories
+ctforge cli --status       # Show installed/health status
+ctforge cli --nuke         # Uninstall all managed tools
+ctforge cli --manual       # Display manual guide
 ```
 
 ### Web Dashboard
 
 ```bash
-sudo ./ctf-tools web --port 8080    # Custom port
+ctforge web --port 8080    # Custom port
 ```
 
-Open `http://localhost:5000` (or your custom port) in a browser.
+Open `http://localhost:5000` (or your custom port) in a browser. The dashboard includes a **Manual** page with copy-paste commands for every tool.
 
 ---
 
@@ -103,14 +120,11 @@ Open `http://localhost:5000` (or your custom port) in a browser.
 
 The app automatically checks for new releases on GitHub.
 
-- **In TUI**: A yellow banner appears at the top when an update is available.
-- **In Web Dashboard**: A notification bar appears.
-- **In CLI**: An update notice is shown on launch.
-
-To update:
+- **Desktop App / Web**: A notification banner appears when an update is available.
+- **CLI**: An update notice is shown on launch.
 
 ```bash
-sudo ./ctf-tools update
+ctforge update
 ```
 
 ---
@@ -140,17 +154,22 @@ ctf-tools-installer/
 │   ├── __init__.py            # Version & constants
 │   ├── core.py                # Installer engine
 │   ├── cli.py                 # Rich CLI interface
-│   ├── tui.py                 # Textual TUI app
+│   ├── desktop.py             # Desktop GUI (pywebview)
 │   ├── updater.py             # Auto-update logic
 │   └── web/
 │       ├── app.py             # Flask web dashboard
 │       ├── static/            # CSS & JS
 │       └── templates/         # HTML
+├── packaging/
+│   ├── ctforge.desktop        # Linux desktop entry
+│   ├── ctforge.svg            # App icon
+│   ├── build-deb.sh           # .deb build script
+│   └── build-appimage.sh      # .AppImage build script
 ├── MANUAL.md                  # Manual installation guide
 ├── requirements.txt
 ├── pyproject.toml
 ├── .github/workflows/
-│   └── release.yml            # CI/CD → binary release
+│   └── release.yml            # CI/CD → binary + .deb + .AppImage
 └── LICENSE
 ```
 
@@ -160,11 +179,20 @@ ctf-tools-installer/
 
 ```bash
 pip install pyinstaller
-pyinstaller --onefile --name ctf-tools \
+pip install -r requirements.txt
+
+# Build the binary
+pyinstaller --onefile --name ctforge \
   --add-data "ctf_tools/web/templates:ctf_tools/web/templates" \
   --add-data "ctf_tools/web/static:ctf_tools/web/static" \
+  --add-data "MANUAL.md:." \
   main.py
-# Binary → dist/ctf-tools
+
+# Build .deb
+bash packaging/build-deb.sh 2.0.0
+
+# Build .AppImage
+bash packaging/build-appimage.sh 2.0.0
 ```
 
 ---

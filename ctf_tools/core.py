@@ -1,7 +1,7 @@
-"""Core installer engine for CTF tools.
+"""Core installer engine for CTForge.
 
 Provides all installation, detection, health-check, and uninstall logic.
-This module is interface-agnostic — CLI, TUI, and Web all use it.
+This module is interface-agnostic — Desktop, Web, and CLI all use it.
 """
 
 import os
@@ -153,6 +153,11 @@ def check_sudo() -> bool:
 
 
 def run_cmd(command: str, ignore_errors: bool = False) -> bool:
+    # When not running as root, prefix system commands with sudo
+    if os.geteuid() != 0:
+        prefixes = ("apt-get ", "dpkg ", "dpkg-", "add-apt")
+        if any(command.lstrip().startswith(p) for p in prefixes):
+            command = f"sudo {command}"
     log(f"Executing: {command}", "INFO")
     try:
         process = subprocess.Popen(

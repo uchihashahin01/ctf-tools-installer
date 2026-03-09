@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
-name = "ctf-tools-installer"
-version = "1.0.0"
-description = "A comprehensive CTF tools installer with CLI, TUI, and Web interfaces"
+name = "ctforge"
+version = "2.0.0"
+description = "CTForge — A comprehensive CTF tools installer with Desktop App, Web Dashboard & CLI"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -17,12 +17,12 @@ dependencies = [
     "flask-socketio>=5.3",
     "eventlet>=0.35",
     "rich>=13.0",
-    "textual>=0.50",
+    "pywebview>=5.0",
     "requests>=2.31",
 ]
 
 [project.scripts]
-ctf-tools = "main:main"
+ctforge = "main:main"
 
 [project.urls]
 Homepage = "https://github.com/uchihashahin01/ctf-tools-installer"

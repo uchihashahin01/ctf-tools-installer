@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=CTForge
+Comment=CTF Tools Installer — Forge your CTF arsenal
+Exec=ctforge app
+Icon=ctforge
+Terminal=false
+Type=Application
+Categories=Development;Security;System;
+Keywords=CTF;security;hacking;tools;installer;
+StartupWMClass=ctforge

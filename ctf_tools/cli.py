@@ -1,4 +1,4 @@
-"""Rich-powered CLI interface for CTF Tools Installer."""
+"""Rich-powered CLI interface for CTForge."""
 
 import sys
 from rich.console import Console
@@ -40,7 +40,7 @@ def _setup_logger() -> None:
 
 def _print_banner() -> None:
     banner = Text()
-    banner.append("CTF Tools Installer", style="bold cyan")
+    banner.append("⚔ CTForge", style="bold cyan")
     banner.append(f"  v{__version__}", style="dim")
     console.print(Panel(banner, border_style="cyan", box=box.DOUBLE))
 
@@ -51,7 +51,7 @@ def _check_update_banner() -> None:
         console.print(
             Panel(
                 f"[bold yellow]Update available![/] v{info['current']} → v{info['latest']}\n"
-                f"Run: [cyan]sudo ./ctf-tools update[/]",
+                f"Run: [cyan]ctforge update[/]",
                 border_style="yellow",
                 title="Update",
             )

@@ -1,6 +1,7 @@
 const socket = io();
 const categoryList = document.getElementById('category-list');
 const toolsGrid = document.getElementById('tools-grid');
+const manualPage = document.getElementById('manual-page');
 const terminal = document.getElementById('terminal-output');
 const statusIndicator = document.getElementById('connection-status');
 const pageTitle = document.getElementById('page-title');
@@ -15,7 +16,7 @@ async function checkForUpdate() {
         if (data.update_available) {
             const banner = document.getElementById('update-banner');
             const text = document.getElementById('update-text');
-            text.textContent = `Update available: v${data.current} → v${data.latest}  |  Run: sudo ./ctf-tools update`;
+            text.textContent = `Update available: v${data.current} \u2192 v${data.latest}  |  Run: sudo ctforge update`;
             banner.classList.remove('hidden');
         }
     } catch (e) { /* silent */ }
@@ -51,6 +52,22 @@ socket.on('install_complete', (data) => {
     }
 });
 
+// --- Navigation helpers ---
+
+function showToolsView() {
+    toolsGrid.classList.remove('hidden');
+    manualPage.classList.add('hidden');
+    const actions = document.getElementById('category-actions');
+    if (actions) actions.classList.remove('hidden');
+}
+
+function showManualView() {
+    toolsGrid.classList.add('hidden');
+    manualPage.classList.remove('hidden');
+    const actions = document.getElementById('category-actions');
+    if (actions) actions.classList.add('hidden');
+}
+
 // --- UI Logic ---
 
 async function loadCategories() {
@@ -66,16 +83,65 @@ async function loadCategories() {
     });
 }
 
-function selectCategory(element, category) {
+function clearSidebarActive() {
     document.querySelectorAll('.sidebar li').forEach(el => el.classList.remove('active'));
+}
+
+function selectCategory(element, category) {
+    clearSidebarActive();
     element.classList.add('active');
     currentCategory = category;
     pageTitle.textContent = category.name + " Tools";
+    showToolsView();
     loadTools(category.id);
 }
 
+async function showManual() {
+    clearSidebarActive();
+    document.getElementById('nav-manual').classList.add('active');
+    currentCategory = null;
+    pageTitle.textContent = "Manual Installation Guide";
+    showManualView();
+    await loadManual();
+}
+
+async function loadManual() {
+    manualPage.innerHTML = '<div class="placeholder-msg">Loading manual\u2026</div>';
+    try {
+        const res = await fetch('/api/manual');
+        const data = await res.json();
+        let html = '<div class="manual-intro">Copy-paste these commands to install tools manually on Ubuntu/Debian.</div>';
+        for (const [catId, commands] of Object.entries(data)) {
+            html += `<div class="manual-category">
+                <h2>${catId.charAt(0).toUpperCase() + catId.slice(1)}</h2>
+                <table class="manual-table">
+                    <thead><tr><th>Tool</th><th>Command</th></tr></thead>
+                    <tbody>`;
+            for (const item of commands) {
+                const escaped = item.command.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                html += `<tr>
+                    <td>${item.tool}</td>
+                    <td><code class="cmd-code" onclick="copyCmd(this)">${escaped}</code>
+                        <span class="copy-hint">click to copy</span></td>
+                </tr>`;
+            }
+            html += '</tbody></table></div>';
+        }
+        manualPage.innerHTML = html;
+    } catch (e) {
+        manualPage.innerHTML = '<div class="placeholder-msg">Failed to load manual.</div>';
+    }
+}
+
+function copyCmd(el) {
+    navigator.clipboard.writeText(el.textContent).then(() => {
+        const hint = el.nextElementSibling;
+        if (hint) { hint.textContent = 'copied!'; setTimeout(() => { hint.textContent = 'click to copy'; }, 1200); }
+    });
+}
+
 async function loadTools(categoryId) {
-    toolsGrid.innerHTML = '<div class="placeholder-msg">Loading tools...</div>';
+    toolsGrid.innerHTML = '<div class="placeholder-msg">Loading tools\u2026</div>';
     const res = await fetch(`/api/tools/${categoryId}`);
     const tools = await res.json();
     toolsGrid.innerHTML = '';
@@ -88,9 +154,10 @@ async function loadTools(categoryId) {
         headerContainer.style.marginBottom = '20px';
         toolsGrid.parentNode.insertBefore(headerContainer, toolsGrid);
     }
+    headerContainer.classList.remove('hidden');
     headerContainer.innerHTML = `
-        <button class="install-all-btn" onclick="installCategory('${categoryId}')">INSTALL ALL ${categoryId.toUpperCase()} TOOLS</button>
-        <button class="nuke-btn" onclick="nukeSystem()">☢️ NUKE SYSTEM</button>
+        <button class="install-all-btn" onclick="installCategory('${categoryId}')">INSTALL ALL ${categoryId.toUpperCase()}</button>
+        <button class="nuke-btn" onclick="nukeSystem()">\u2622 NUKE ALL</button>
     `;
 
     tools.forEach(tool => {
@@ -112,7 +179,7 @@ async function loadTools(categoryId) {
 
         if (tool.installed) {
             const uninstallBtn = document.createElement('button');
-            uninstallBtn.innerText = '🗑️';
+            uninstallBtn.innerText = '\ud83d\uddd1\ufe0f';
             uninstallBtn.title = 'Uninstall';
             uninstallBtn.style.cssText = 'position:absolute;top:12px;right:10px;background:transparent;border:none;cursor:pointer;font-size:1.1rem;z-index:10;';
             uninstallBtn.onclick = (e) => { e.stopPropagation(); uninstallTool(tool); };
@@ -124,12 +191,12 @@ async function loadTools(categoryId) {
 
 async function installCategory(categoryId) {
     if (!confirm(`Install ALL ${categoryId} tools?`)) return;
-    log(`Sending request to install all in ${categoryId}...`);
+    log(`Installing all ${categoryId} tools\u2026`);
     await fetch(`/api/install/category/${categoryId}`, { method: 'POST' });
 }
 
 async function installTool(tool) {
-    log(`Sending request to install ${tool.name}...`);
+    log(`Installing ${tool.name}\u2026`);
     await fetch('/api/install/tool', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -139,7 +206,7 @@ async function installTool(tool) {
 
 async function uninstallTool(tool) {
     if (!confirm(`Uninstall ${tool.name}?`)) return;
-    log(`Sending request to uninstall ${tool.name}...`);
+    log(`Uninstalling ${tool.name}\u2026`);
     await fetch('/api/uninstall/tool', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -150,7 +217,7 @@ async function uninstallTool(tool) {
 async function nukeSystem() {
     if (!confirm("WARNING: Uninstall ALL tools?")) return;
     if (!confirm("Are you absolutely sure?")) return;
-    log('INITIATING SYSTEM NUKE...');
+    log('INITIATING SYSTEM NUKE\u2026');
     await fetch('/api/nuke', { method: 'POST' });
 }
 

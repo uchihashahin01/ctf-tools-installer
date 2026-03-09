@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""CTF Tools Installer — unified entry point.
+"""CTForge — unified entry point.
 
 Usage:
-    sudo ./main.py              Launch TUI (default)
-    sudo ./main.py tui          Launch TUI
-    sudo ./main.py web          Launch web dashboard
-    sudo ./main.py cli          Interactive CLI menu
-    sudo ./main.py cli --all    Install everything (non-interactive)
-    sudo ./main.py update       Check for updates & self-update
-    sudo ./main.py manual       Print manual install guide
+    ctforge                     Launch desktop app (default)
+    ctforge app                 Launch desktop app
+    ctforge web                 Launch web dashboard
+    ctforge cli                 Interactive CLI menu
+    ctforge cli --all           Install everything (non-interactive)
+    ctforge update              Check for updates & self-update
+    ctforge manual              Print manual install guide
 """
 
 import argparse
@@ -19,8 +19,8 @@ from ctf_tools import __version__
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="ctf-tools",
-        description="CTF Tools Installer — CLI, TUI & Web",
+        prog="ctforge",
+        description="CTForge — Desktop App, Web Dashboard & CLI",
     )
     parser.add_argument(
         "-V", "--version", action="version", version=f"%(prog)s {__version__}"
@@ -28,8 +28,8 @@ def main() -> None:
 
     sub = parser.add_subparsers(dest="mode")
 
-    # --- tui ---------------------------------------------------------------
-    sub.add_parser("tui", help="Launch the Terminal UI app")
+    # --- app (desktop GUI) -------------------------------------------------
+    sub.add_parser("app", help="Launch the desktop app (default)")
 
     # --- web ---------------------------------------------------------------
     web_p = sub.add_parser("web", help="Launch the web dashboard")
@@ -57,13 +57,13 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # Default → TUI
+    # Default → desktop app
     if args.mode is None:
-        args.mode = "tui"
+        args.mode = "app"
 
-    if args.mode == "tui":
-        from ctf_tools.tui import run_tui
-        run_tui()
+    if args.mode == "app":
+        from ctf_tools.desktop import run_desktop
+        run_desktop()
 
     elif args.mode == "web":
         from ctf_tools.web.app import run_web
@@ -120,7 +120,7 @@ def _print_manual() -> None:
     from ctf_tools.core import MANUAL_COMMANDS
 
     console = Console()
-    console.print("\n[bold cyan]CTF Tools — Manual Installation Guide[/]\n")
+    console.print("\n[bold cyan]CTForge — Manual Installation Guide[/]\n")
     console.print("[dim]Copy-paste these commands to install tools manually.[/]\n")
 
     for cat_id, commands in MANUAL_COMMANDS.items():

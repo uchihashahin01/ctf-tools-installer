@@ -1,4 +1,4 @@
-"""Flask web dashboard for CTF Tools Installer."""
+"""Flask web dashboard for CTForge."""
 
 import os
 import sys
@@ -149,10 +149,16 @@ def nuke_endpoint():
     return jsonify({"status": "started", "message": "Nuke started"})
 
 
+@app.route("/api/manual")
+def get_manual():
+    """Return manual install commands for all categories."""
+    result = {}
+    for cat_id, commands in core.MANUAL_COMMANDS.items():
+        result[cat_id] = [{"tool": name, "command": cmd} for name, cmd in commands]
+    return jsonify(result)
+
+
 def run_web(port: int = 5000) -> None:
     """Start the web dashboard."""
-    if not core.check_sudo():
-        print("Please run with sudo!")
-        raise SystemExit(1)
-    print(f"Starting Dashboard on http://localhost:{port}")
+    print(f"Starting CTForge Dashboard on http://localhost:{port}")
     socketio.run(app, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True)

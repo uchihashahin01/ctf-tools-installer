@@ -1,5 +1,5 @@
-"""CTF Tools Installer - A comprehensive CTF tools management suite."""
+"""CTForge — Forge your CTF arsenal."""
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 GITHUB_REPO = "uchihashahin01/ctf-tools-installer"
-APP_NAME = "CTF Tools Installer"
+APP_NAME = "CTForge"

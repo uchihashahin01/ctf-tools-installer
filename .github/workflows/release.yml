@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -19,22 +19,32 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libfuse2
+
+      - name: Install Python dependencies
         run: |
           pip install -r requirements.txt
           pip install pyinstaller
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
       - name: Build binary with PyInstaller
         run: |
           pyinstaller \
             --onefile \
-            --name ctf-tools \
+            --name ctforge \
             --add-data "ctf_tools/web/templates:ctf_tools/web/templates" \
             --add-data "ctf_tools/web/static:ctf_tools/web/static" \
+            --add-data "MANUAL.md:." \
             --hidden-import ctf_tools \
             --hidden-import ctf_tools.core \
             --hidden-import ctf_tools.cli \
-            --hidden-import ctf_tools.tui \
+            --hidden-import ctf_tools.desktop \
             --hidden-import ctf_tools.updater \
             --hidden-import ctf_tools.web \
             --hidden-import ctf_tools.web.app \
@@ -42,11 +52,20 @@ jobs:
 
       - name: Verify binary
         run: |
-          ls -lh dist/ctf-tools
-          file dist/ctf-tools
+          ls -lh dist/ctforge
+          file dist/ctforge
+
+      - name: Build .deb package
+        run: bash packaging/build-deb.sh "${{ steps.version.outputs.VERSION }}"
+
+      - name: Build .AppImage
+        run: bash packaging/build-appimage.sh "${{ steps.version.outputs.VERSION }}"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: dist/ctf-tools
+          files: |
+            dist/ctforge
+            ctforge_${{ steps.version.outputs.VERSION }}_amd64.deb
+            CTForge-${{ steps.version.outputs.VERSION }}-x86_64.AppImage

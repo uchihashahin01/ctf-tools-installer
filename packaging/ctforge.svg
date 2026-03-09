@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f6feb"/>
+      <stop offset="100%" stop-color="#58a6ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+  <!-- Anvil body -->
+  <path d="M30 88 h68 v8 h-68z" fill="#fff" opacity="0.95"/>
+  <path d="M38 76 h52 l8 12 h-68z" fill="#fff" opacity="0.9"/>
+  <!-- Anvil horn -->
+  <path d="M90 76 l18 6 v6 l-10 0z" fill="#fff" opacity="0.85"/>
+  <!-- Hammer -->
+  <rect x="56" y="28" width="8" height="36" rx="2" fill="#fff" opacity="0.95" transform="rotate(-30 60 46)"/>
+  <rect x="44" y="22" width="32" height="14" rx="3" fill="#fff" opacity="0.95" transform="rotate(-30 60 29)"/>
+  <!-- Flag accent -->
+  <path d="M82 28 l14 0 l-4 8 l4 8 l-14 0z" fill="#f0883e" opacity="0.9"/>
+  <rect x="80" y="26" width="3" height="30" rx="1" fill="#fff" opacity="0.9"/>
+</svg>

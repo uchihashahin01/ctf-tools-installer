@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTF Tools Dashboard v{{ version }}</title>
+    <title>CTForge v{{ version }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="update-banner" class="update-banner hidden">
@@ -16,8 +16,17 @@
     <div class="container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo">CTF_TOOLS <span class="version">v{{ version }}</span></div>
+            <div class="logo">
+                <span class="logo-icon">&#9876;</span>
+                CTForge
+                <span class="version">v{{ version }}</span>
+            </div>
+            <div class="sidebar-section">TOOLS</div>
             <ul id="category-list"></ul>
+            <div class="sidebar-section">REFERENCE</div>
+            <ul>
+                <li id="nav-manual" onclick="showManual()">&#128214; MANUAL</li>
+            </ul>
         </div>
 
         <!-- Main Content -->
@@ -31,14 +40,17 @@
                 <div class="placeholder-msg">Select a category to view tools.</div>
             </div>
 
+            <!-- Manual page (hidden by default) -->
+            <div id="manual-page" class="manual-page hidden"></div>
+
             <!-- Terminal Area -->
             <div class="terminal-container">
                 <div class="terminal-header">
-                    <span>>_ INSTALLATION LOGS</span>
+                    <span>&gt;_ LOGS</span>
                     <button id="clear-log">CLEAR</button>
                 </div>
                 <div class="terminal-output" id="terminal-output">
-                    <div class="log-line info">[*] System Ready. Waiting for commands...</div>
+                    <div class="log-line info">[*] CTForge ready. Select a category or read the manual.</div>
                 </div>
             </div>
         </div>

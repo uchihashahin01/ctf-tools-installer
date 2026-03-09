@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTF Tools Dashboard</title>
+    <title>CTF Tools Dashboard v{{ version }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div id="update-banner" class="update-banner hidden">
+        <span id="update-text"></span>
+    </div>
+
     <div class="container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo">CTF_TOOLS</div>
-            <ul id="category-list">
-                <!-- Populated by JS -->
-            </ul>
+            <div class="logo">CTF_TOOLS <span class="version">v{{ version }}</span></div>
+            <ul id="category-list"></ul>
         </div>
 
         <!-- Main Content -->
@@ -26,7 +28,6 @@
             </header>
 
             <div id="tools-grid" class="grid">
-                <!-- Cards populated by JS -->
                 <div class="placeholder-msg">Select a category to view tools.</div>
             </div>
 

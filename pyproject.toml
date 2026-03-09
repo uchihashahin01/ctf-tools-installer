@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "ctf-tools-installer"
+version = "1.0.0"
+description = "A comprehensive CTF tools installer with CLI, TUI, and Web interfaces"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Md. Shahin Alam"}
+]
+dependencies = [
+    "flask>=3.0",
+    "flask-socketio>=5.3",
+    "eventlet>=0.35",
+    "rich>=13.0",
+    "textual>=0.50",
+    "requests>=2.31",
+]
+
+[project.scripts]
+ctf-tools = "main:main"
+
+[project.urls]
+Homepage = "https://github.com/uchihashahin01/ctf-tools-installer"
+Repository = "https://github.com/uchihashahin01/ctf-tools-installer"
+Issues = "https://github.com/uchihashahin01/ctf-tools-installer/issues"
